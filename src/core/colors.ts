@@ -1,16 +1,16 @@
 // ──────────────────────────────────────────────────────────────────
 //  Color Palette — matches Tapiz frontend CSS custom properties
-//  Primary: Prussian Navy (--color-primary-* series)
+//  Primary: Electric Cyan (--color-primary-* series)
 // ──────────────────────────────────────────────────────────────────
 
 export const HEX = {
-  primary:    "#0e72e8",
-  primary50:  "#f0f7ff",
-  primary100: "#daeeff",
-  primary200: "#aed8ff",
-  primary700: "#0e4c8a",
-  primary800: "#0d3d6e",
-  primary900: "#0c3159",
+  primary:    "#1496b3",
+  primary50:  "#e8fbff",
+  primary100: "#c7f5ff",
+  primary200: "#99eeff",
+  primary700: "#0e7088",
+  primary800: "#0a4f60",
+  primary900: "#062f3b",
 
   gray50:  "#f9fafb",
   gray100: "#f3f4f6",
