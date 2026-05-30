@@ -6,7 +6,7 @@ function makeRedisStore(prefix: string) {
 
   const client = {
     scriptLoad: (script: string): Promise<string> =>
-      (redis.script("LOAD", script) as Promise<string>),
+      (redis.script("LOAD", script) as Promise<string>).catch(() => ""),
 
     evalsha: <TArgs extends unknown[], TData = unknown>(
       sha1: string,
@@ -14,16 +14,16 @@ function makeRedisStore(prefix: string) {
       args: TArgs,
     ): Promise<TData> => {
       const flatArgs = [...(args as (string | number)[])];
-      return redis.evalsha(
+      return (redis.evalsha(
         sha1,
         keys.length,
         ...(keys as (string | Buffer | number)[]),
         ...flatArgs,
-      ) as Promise<TData>;
+      ) as Promise<TData>).catch(() => [0, Date.now()] as TData);
     },
 
-    decr: (key: string): Promise<number> => redis.decr(key),
-    del:  (key: string): Promise<number>  => redis.del(key),
+    decr: (key: string): Promise<number> => redis.decr(key).catch(() => 0),
+    del:  (key: string): Promise<number>  => redis.del(key).catch(() => 0),
   };
 
   return new RedisStore({ client, prefix });
