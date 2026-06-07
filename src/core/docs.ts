@@ -270,6 +270,62 @@ export const docsHtml = /* html */ `<!DOCTYPE html>
       </div>
     </div>
   </div>
+
+
+  <!-- License -->
+  <div class="section-title">License Email</div>
+
+  <div class="endpoint">
+    <div class="endpoint-header" onclick="toggle(this)">
+      <span class="method post">POST</span>
+      <span class="path">/api/mail/send-license</span>
+      <span class="endpoint-desc">Send a license key via email</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="endpoint-body">
+      <p style="font-size:0.85rem;color:var(--gray-600);margin-bottom:0.75rem">
+        Sends a styled HTML email containing a Tapiz license key, plan name, trial badge, and expiry information.
+      </p>
+
+      <div class="schema-title">Request body (JSON)</div>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code class="field">to</code></td><td class="type">string</td><td><span class="tag-req">req</span></td><td>Recipient email address</td></tr>
+          <tr><td><code class="field">key</code></td><td class="type">string</td><td><span class="tag-req">req</span></td><td>License key in TPZ-XXXX-XXXX-XXXX-XXXX-XXXX format</td></tr>
+          <tr><td><code class="field">plan</code></td><td class="type">starter | pro | institution</td><td><span class="tag-req">req</span></td><td>Plan activated by this key</td></tr>
+          <tr><td><code class="field">expiresAt</code></td><td class="type">string | null</td><td><span class="tag-opt">opt</span></td><td>ISO expiry date</td></tr>
+          <tr><td><code class="field">isTrial</code></td><td class="type">boolean</td><td><span class="tag-opt">opt</span></td><td>Marks the message as a trial license</td></tr>
+          <tr><td><code class="field">appName</code></td><td class="type">string</td><td><span class="tag-opt">opt</span></td><td>Application name shown in the email</td></tr>
+        </tbody>
+      </table>
+
+      <div class="schema-title">Example request</div>
+      <pre><code>{
+  "to":        "dekanat@uns.ac.rs",
+  "key":       "TPZ-ABCD-EFGH-JKLM-NPQR-STUV",
+  "plan":      "institution",
+  "expiresAt": "2027-06-06T00:00:00.000Z",
+  "isTrial":   false,
+  "appName":   "Tapiz Labs"
+}</code></pre>
+
+      <div class="schema-title">Success response (200)</div>
+      <pre><code>{
+  "success":   true,
+  "messageId": "&lt;abc123@smtp.uns.ac.rs&gt;",
+  "message":   "License key sent successfully"
+}</code></pre>
+
+      <div class="response-list">
+        <span class="res-badge res-200">200 — sent</span>
+        <span class="res-badge res-400">400 — validation error</span>
+        <span class="res-badge res-429">429 — rate limit</span>
+        <span class="res-badge res-500">500 — SMTP error</span>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>

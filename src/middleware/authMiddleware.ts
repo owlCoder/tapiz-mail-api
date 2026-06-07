@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 
 export const apiKeyAuth: MiddlewareHandler = async (c, next) => {
-  const secret = process.env.API_SECRET;
+  const secret = process.env.API_SECRET ?? process.env.MAIL_SERVICE_SECRET;
   const provided = c.req.header("x-api-secret");
 
   if (!secret || provided !== secret) {

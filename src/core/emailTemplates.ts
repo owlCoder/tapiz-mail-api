@@ -1,4 +1,5 @@
 import { HEX } from "../core/colors";
+export { licenseKeyTemplate } from "./templates/licenseEmailTemplate";
 
 export function twoFactorTemplate(code: string, appName = "Tapiz"): string {
   return /* html */ `<!DOCTYPE html>
