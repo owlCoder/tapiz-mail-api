@@ -23,5 +23,5 @@ export function getTransporter(): Transporter {
 
 // Read at call time so Vercel env vars are guaranteed to be injected.
 export function getSmtpFrom(): string {
-  return process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "noreply@tapiz.rs";
+  return process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "noreply@tapiz.site";
 }
