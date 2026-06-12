@@ -1,21 +1,17 @@
 // src/routes/sendResetPasswordRoute.ts
 import { Hono } from "hono";
-import { getTransporter, getSmtpFrom } from "../core/mailer";
 import { passwordResetTemplate } from "../core/emailTemplates";
-import { smtpErrorMessage } from "../utils/smtpErrorUtil";
 import { EMAIL_REGEX, URL_REGEX } from "../core/constants";
 import { SendResetPasswordBody } from "../models/SendResetPasswordBody";
+import { parseJsonBody } from "../utils/requestBody";
+import { sendMailResponse } from "../utils/sendMailResponse";
 
 export const sendResetPasswordRouter = new Hono();
 
 sendResetPasswordRouter.post("/", async (c) => {
-  let body: SendResetPasswordBody;
-
-  try {
-    body = await c.req.json<SendResetPasswordBody>();
-  } catch {
-    return c.json({ error: "Invalid JSON body" }, 400);
-  }
+  const parsed = await parseJsonBody<SendResetPasswordBody>(c);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
 
   const { to, link, appName } = body;
 
@@ -35,42 +31,23 @@ sendResetPasswordRouter.post("/", async (c) => {
   }
 
   const name = appName ?? "Tapiz Labs";
-
-  try {
-    const info = await getTransporter().sendMail({
-      from:    `"${name}" <${getSmtpFrom()}>`,
-      to,
-      subject: `${name} — Resetovanje lozinke`,
-      html:    passwordResetTemplate(link, name),
-      text:    [
-        `Poštovani korisniče,`,
-        ``,
-        `Zahtevano je resetovanje lozinke za nalog na ${name}.`,
-        `Kliknite na sledeći link kako biste postavili novu lozinku:`,
-        ``,
-        `${link}`,
-        ``,
-        `Ako niste Vi zahtevali resetovanje lozinke, ignorišite ovaj email.`,
-        `Link važi narednih 30 minuta.`,
-      ].join("\n"),
-    });
-
-    console.log(`[Mail Service] Reset password email sent to ${to}, messageId: ${info.messageId}`);
-
-    return c.json({
-      success:   true,
-      messageId: info.messageId,
-      message:   "Reset password email sent successfully",
-    });
-  } catch (err) {
-    console.error("[Mail Service] SMTP error:", err);
-
-    return c.json(
-      {
-        error:   smtpErrorMessage(err),
-        details: (err instanceof Error ? err.message : String(err))
-      },
-      500,
-    );
-  }
+  return sendMailResponse(c, {
+    appName: name,
+    to,
+    subject: `${name} — Resetovanje lozinke`,
+    html: passwordResetTemplate(link, name),
+    text: [
+      "Poštovani korisniče,",
+      "",
+      `Zahtevano je resetovanje lozinke za nalog na ${name}.`,
+      "Kliknite na sledeći link kako biste postavili novu lozinku:",
+      "",
+      `${link}`,
+      "",
+      "Ako niste Vi zahtevali resetovanje lozinke, ignorišite ovaj email.",
+      "Link važi narednih 30 minuta.",
+    ].join("\n"),
+    successMessage: "Reset password email sent successfully",
+    logLabel: "Reset password email sent",
+  });
 });

@@ -1,20 +1,16 @@
 import { Hono } from "hono";
-import { getTransporter, getSmtpFrom } from "../core/mailer";
 import { twoFactorTemplate } from "../core/emailTemplates";
 import { EMAIL_REGEX, CODE_REGEX } from "../core/constants";
 import { Send2faBody } from "../models/Send2faBody";
-import { smtpErrorMessage } from "../utils/smtpErrorUtil";
+import { parseJsonBody } from "../utils/requestBody";
+import { sendMailResponse } from "../utils/sendMailResponse";
 
 export const send2faRouter = new Hono();
 
 send2faRouter.post("/", async (c) => {
-  let body: Send2faBody;
-
-  try {
-    body = await c.req.json<Send2faBody>();
-  } catch {
-    return c.json({ error: "Invalid JSON body" }, 400);
-  }
+  const parsed = await parseJsonBody<Send2faBody>(c);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
 
   const { to, code, appName } = body;
 
@@ -34,37 +30,18 @@ send2faRouter.post("/", async (c) => {
   }
 
   const name = appName ?? "Tapiz Labs";
-
-  try {
-    const info = await getTransporter().sendMail({
-      from:    `"${name}" <${getSmtpFrom()}>`,
-      to,
-      subject: `${name} — 2FA kod: ${code}`,
-      html:    twoFactorTemplate(code, name),
-      text:    [
-        `Vaš 2FA kod za ${name} je: ${code}`,
-        "",
-        "Ovaj kod važi narednih 15 minuta.",
-        "Ako niste pokušali da se prijavite, ignorišite ovaj email.",
-      ].join("\n"),
-    });
-
-    console.log(`[Mail Service] Sent to ${to}, messageId: ${info.messageId}`);
-
-    return c.json({
-      success:   true,
-      messageId: info.messageId,
-      message:   "2FA code sent successfully",
-    });
-  } catch (err) {
-    console.error("[Mail Service] SMTP error:", err);
-
-    return c.json(
-      {
-        error:   smtpErrorMessage(err),
-        details: (err instanceof Error ? err.message : String(err))
-      },
-      500,
-    );
-  }
+  return sendMailResponse(c, {
+    appName: name,
+    to,
+    subject: `${name} — 2FA kod: ${code}`,
+    html: twoFactorTemplate(code, name),
+    text: [
+      `Vaš 2FA kod za ${name} je: ${code}`,
+      "",
+      "Ovaj kod važi narednih 15 minuta.",
+      "Ako niste pokušali da se prijavite, ignorišite ovaj email.",
+    ].join("\n"),
+    successMessage: "2FA code sent successfully",
+    logLabel: "Sent",
+  });
 });
