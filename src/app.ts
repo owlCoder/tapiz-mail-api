@@ -38,6 +38,11 @@ app.get("/api/mail/health", (c) =>
   c.json({ status: "ok", ts: new Date().toISOString() }),
 );
 
+// Canonical health alias — GET /api/health (public, no API key).
+app.get("/api/health", (c) =>
+  c.json({ status: "ok", ts: new Date().toISOString() }),
+);
+
 // ── API docs (root + /api/docs) ───────────────────────────────────
 app.get("/",         (c) => c.html(docsHtml));
 app.get("/api/docs", (c) => c.html(docsHtml));
